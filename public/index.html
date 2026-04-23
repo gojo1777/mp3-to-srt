@@ -565,6 +565,30 @@ function toSRT(segments) {
   }).join('\n');
 }
 
+async function translateSegments(segments, groqKey) {
+  // Build numbered text block to translate
+  const lines = segments.map((s, i) => `[${i}] ${s.text.trim()}`).join('\n');
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + groqKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.2,
+      messages: [{
+        role: 'user',
+        content: `Translate every line below to natural English. Keep the [N] index prefix on each line. Output ONLY the translated lines, nothing else.\n\n${lines}`
+      }]
+    })
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || 'Translation API error'); }
+  const data = await res.json();
+  const out = data.choices[0].message.content.trim().split('\n');
+  return segments.map((s, i) => {
+    const match = out.find(l => l.startsWith(`[${i}]`));
+    return { ...s, text: match ? match.replace(/^\[\d+\]\s*/, '') : s.text };
+  });
+}
+
 async function generate() {
   const key = document.getElementById('apiKey').value.trim();
   if (!key) { err('Groq API Key enter කරන්න. console.groq.com → API Keys → Free!'); return; }
@@ -577,21 +601,18 @@ async function generate() {
   const mode = document.getElementById('mode').value;
   const lang = document.getElementById('srcLang').value;
 
-  const endpoint = mode === 'translate'
-    ? 'https://api.groq.com/openai/v1/audio/translations'
-    : 'https://api.groq.com/openai/v1/audio/transcriptions';
+  prog(15, 'Audio upload කරනවා...');
 
-  prog(20, 'Uploading file...');
-
+  // Always transcribe first (preserves timestamps + works with Sinhala)
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('model', mode === 'translate' ? 'whisper-large-v3' : 'whisper-large-v3-turbo');
+  fd.append('model', 'whisper-large-v3-turbo');
   fd.append('response_format', 'verbose_json');
-  if (lang && mode !== 'translate') fd.append('language', lang);
+  if (lang) fd.append('language', lang);
 
   try {
-    prog(50, 'Groq AI processing... (ටිකක් ඉන්න)');
-    const res = await fetch(endpoint, {
+    prog(40, 'Whisper transcribing... (ටිකක් ඉන්න)');
+    const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + key },
       body: fd
@@ -599,13 +620,19 @@ async function generate() {
 
     if (!res.ok) {
       const e = await res.json().catch(() => ({}));
-      throw new Error(e.error?.message || 'API error ' + res.status);
+      throw new Error(e.error?.message || 'Transcription error ' + res.status);
     }
 
-    prog(92, 'SRT file generate කරනවා...');
     const data = await res.json();
-    const segments = data.segments || [];
-    if (!segments.length) throw new Error('Segments නැහැ — audio හරිට transcribe වුණේ නැහැ.');
+    let segments = data.segments || [];
+    if (!segments.length) throw new Error('Audio transcribe වුණේ නැහැ — language select කරලා try කරන්න.');
+
+    if (mode === 'translate') {
+      prog(70, 'English translate කරනවා...');
+      segments = await translateSegments(segments, key);
+    }
+
+    prog(95, 'SRT build කරනවා...');
     srt = toSRT(segments);
     prog(100, 'Done! ✓');
 
