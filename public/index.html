@@ -585,7 +585,7 @@ async function generate() {
 
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('model', 'whisper-large-v3-turbo');
+  fd.append('model', mode === 'translate' ? 'whisper-large-v3' : 'whisper-large-v3-turbo');
   fd.append('response_format', 'verbose_json');
   if (lang && mode !== 'translate') fd.append('language', lang);
 
