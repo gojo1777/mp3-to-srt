@@ -587,7 +587,6 @@ async function generate() {
   fd.append('file', file);
   fd.append('model', 'whisper-large-v3-turbo');
   fd.append('response_format', 'verbose_json');
-  fd.append('timestamp_granularities[]', 'segment');
   if (lang && mode !== 'translate') fd.append('language', lang);
 
   try {
