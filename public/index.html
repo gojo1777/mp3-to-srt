@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MP3 → SRT Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0f;
+      --surface: #18181b;
+      --surface2: #222226;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.15);
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --accent: #a78bfa;
+      --accent2: #7c3aed;
+      --success: #4ade80;
+      --danger: #f87171;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1rem 4rem;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400;500&display=swap');
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-bottom: 16px;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* Drop zone */
+    #dropzone {
+      border: 1.5px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 2.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: transparent;
+      margin-bottom: 12px;
+    }
+
+    #dropzone:hover, #dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(167,139,250,0.04);
+    }
+
+    .drop-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .drop-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .drop-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* File info */
+    #fileInfo {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .file-icon { font-size: 22px; }
+
+    .file-details { flex: 1; min-width: 0; }
+
+    .file-name {
+      font-size: 14px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      transition: color 0.15s;
+      padding: 4px;
+    }
+    .clear-btn:hover { color: var(--danger); }
+
+    /* Inputs */
+    input[type="password"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="password"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371717a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .hint a { color: var(--accent); text-decoration: none; }
+    .hint a:hover { text-decoration: underline; }
+
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+
+    /* Generate button */
+    #generateBtn {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    #generateBtn:hover:not(:disabled) { opacity: 0.9; }
+    #generateBtn:active:not(:disabled) { transform: scale(0.99); }
+    #generateBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Progress */
+    #progress { display: none; margin-top: 16px; }
+
+    .progress-bar-track {
+      background: var(--surface2);
+      border-radius: 100px;
+      height: 4px;
+      overflow: hidden;
+    }
+
+    #progressBar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      width: 0%;
+      border-radius: 100px;
+      transition: width 0.5s ease;
+    }
+
+    #progressText {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* Result */
+    #result { display: none; margin-top: 12px; }
+
+    .preview-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    pre {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #a1a1aa;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .actions { display: flex; gap: 8px; }
+
+    .btn-dl {
+      flex: 1;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-dl:hover { background: var(--surface); border-color: var(--accent); }
+
+    .btn-copy {
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-copy:hover { color: var(--text); border-color: var(--border2); }
+
+    /* Error */
+    #errorBox {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--danger);
+      line-height: 1.5;
+    }
+
+    /* Success chip */
+    .success-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--success);
+      background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 11px;
+      color: #3f3f46;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">AI Powered</div>
+      <h1>MP3 → SRT Generator</h1>
+      <p class="subtitle">Audio file එකෙන් English subtitles automatically generate කරන්න — Whisper AI use කරලා.</p>
+    </div>
+
+    <!-- Drop zone -->
+    <div id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <span class="drop-icon">🎵</span>
+      <p class="drop-title">MP3 file එක drop කරන්න</p>
+      <p class="drop-hint">MP3, WAV, M4A, WEBM · max 25MB · Click හෝ drag & drop</p>
+      <input type="file" id="fileInput" accept=".mp3,.m4a,.wav,.webm,.mp4" style="display:none">
+    </div>
+
+    <!-- File info -->
+    <div id="fileInfo">
+      <span class="file-icon">🎧</span>
+      <div class="file-details">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+      </div>
+      <button class="clear-btn" onclick="clearFile()">✕</button>
+    </div>
+
+    <!-- API Key -->
+    <div class="card">
+      <span class="label">OpenAI API Key</span>
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
+      <p class="hint">Key එක browser එකේ only use වෙනවා, save නොවෙයි. <a href="https://platform.openai.com/api-keys" target="_blank">Key get කරන්න →</a></p>
+    </div>
+
+    <!-- Options -->
+    <div class="card">
+      <span class="label">Settings</span>
+      <div class="row">
+        <div>
+          <select id="sourceLang">
+            <option value="">Auto detect</option>
+            <option value="si">සිංහල</option>
+            <option value="en">English</option>
+            <option value="ta">Tamil</option>
+            <option value="hi">Hindi</option>
+            <option value="ja">Japanese</option>
+            <option value="zh">Chinese</option>
+            <option value="ko">Korean</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="es">Spanish</option>
+          </select>
+          <p class="hint">Source language</p>
+        </div>
+        <div>
+          <select id="subtitleMode">
+            <option value="translate">English (translate)</option>
+            <option value="transcribe">Same as source</option>
+          </select>
+          <p class="hint">Subtitle language</p>
+        </div>
+      </div>
+    </div>
+
+    <button id="generateBtn" onclick="generateSRT()" disabled>
+      ✨ SRT Generate කරන්න
+    </button>
+
+    <!-- Progress -->
+    <div id="progress">
+      <div class="progress-bar-track">
+        <div id="progressBar"></div>
+      </div>
+      <p id="progressText"></p>
+    </div>
+
+    <!-- Result -->
+    <div id="result">
+      <div class="success-chip">✓ Successfully generated</div>
+      <div class="preview-box">
+        <pre id="srtPreview"></pre>
+      </div>
+      <div class="actions">
+        <button class="btn-dl" onclick="downloadSRT()">⬇ SRT Download කරන්න</button>
+        <button class="btn-copy" id="copyBtn" onclick="copySRT()">Copy</button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorBox" id="errorText"></div>
+
+    <footer>Powered by OpenAI Whisper · No data stored</footer>
+  </div>
+
+  <script>
+    let selectedFile = null;
+    let srtContent = '';
+    let srtFileName = 'subtitles.srt';
+
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+      selectedFile = file;
+      srtFileName = file.name.replace(/\.[^.]+$/, '') + '.srt';
+      document.getElementById('fileInfo').style.display = 'flex';
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+      document.getElementById('generateBtn').disabled = false;
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('errorBox').style.display = 'none';
+      document.getElementById('progress').style.display = 'none';
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      document.getElementById('fileInfo').style.display = 'none';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('progress').style.display = 'none';
+    }
+
+    function setProgress(pct, text) {
+      document.getElementById('progress').style.display = 'block';
+      document.getElementById('progressBar').style.width = pct + '%';
+      document.getElementById('progressText').textContent = text;
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.style.display = 'block';
+      box.textContent = '⚠ ' + msg;
+    }
+
+    async function generateSRT() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) { showError('OpenAI API Key එකක් enter කරන්න.'); return; }
+      if (!selectedFile) { showError('File එකක් select කරන්න.'); return; }
+      if (selectedFile.size > 26214400) { showError('File size 25MB limit exceed කරනවා.'); return; }
+
+      document.getElementById('errorBox').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('generateBtn').disabled = true;
+
+      const mode = document.getElementById('subtitleMode').value;
+      const lang = document.getElementById('sourceLang').value;
+      const endpoint = mode === 'translate'
+        ? 'https://api.openai.com/v1/audio/translations'
+        : 'https://api.openai.com/v1/audio/transcriptions';
+
+      setProgress(15, 'Uploading...');
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('model', 'whisper-1');
+      formData.append('response_format', 'srt');
+      if (lang && mode !== 'translate') formData.append('language', lang);
+
+      try {
+        setProgress(40, 'Processing audio... (ටිකක් ඉන්න)');
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + apiKey },
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'API error ' + res.status);
+        }
+
+        setProgress(90, 'Generating SRT...');
+        srtContent = await res.text();
+        setProgress(100, 'Done!');
+
+        document.getElementById('srtPreview').textContent =
+          srtContent.length > 1800 ? srtContent.substring(0, 1800) + '\n...' : srtContent;
+        document.getElementById('result').style.display = 'block';
+      } catch (err) {
+        showError(err.message);
+        document.getElementById('progress').style.display = 'none';
+      }
+
+      document.getElementById('generateBtn').disabled = false;
+    }
+
+    function downloadSRT() {
+      const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = srtFileName;
+      a.click();
+    }
+
+    function copySRT() {
+      navigator.clipboard.writeText(srtContent).then(() => {
+        document.getElementById('copyBtn').textContent = 'Copied!';
+        setTimeout(() => document.getElementById('copyBtn').textContent = 'Copy', 2000);
+      });
+    }
+  </script>
+</body>
+</html>
