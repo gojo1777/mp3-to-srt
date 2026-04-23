@@ -3,139 +3,226 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MP3 → SRT Generator</title>
+  <title>MP3 → SRT · Free with Groq</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0d0d0f;
-      --surface: #18181b;
-      --surface2: #222226;
-      --border: rgba(255,255,255,0.08);
-      --border2: rgba(255,255,255,0.15);
-      --text: #f4f4f5;
+      --bg: #09090b;
+      --s1: #111113;
+      --s2: #1c1c1f;
+      --s3: #27272a;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.13);
+      --text: #fafafa;
       --muted: #71717a;
-      --accent: #a78bfa;
-      --accent2: #7c3aed;
-      --success: #4ade80;
-      --danger: #f87171;
-      --radius: 12px;
+      --muted2: #52525b;
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.12);
+      --green-border: rgba(74,222,128,0.25);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,0.1);
+      --red-border: rgba(248,113,113,0.2);
+      --r: 10px;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Sans', system-ui, sans-serif;
+      font-family: 'Instrument Sans', sans-serif;
       min-height: 100vh;
       display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 3rem 1rem 4rem;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem 5rem;
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400;500&display=swap');
+    .wrap { width: 100%; max-width: 520px; }
 
-    .container {
-      width: 100%;
-      max-width: 560px;
-    }
+    /* Header */
+    .header { margin-bottom: 2rem; }
 
-    .header {
-      margin-bottom: 2.5rem;
-    }
-
-    .badge {
+    .free-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--accent);
-      background: rgba(167,139,250,0.1);
-      border: 1px solid rgba(167,139,250,0.2);
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
       border-radius: 100px;
       padding: 4px 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
-    .badge::before {
-      content: '';
-      width: 6px;
-      height: 6px;
+    .dot {
+      width: 5px; height: 5px;
       border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s infinite;
+      background: var(--green);
+      animation: blink 2s infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
     h1 {
-      font-size: 28px;
-      font-weight: 600;
-      line-height: 1.25;
-      letter-spacing: -0.02em;
-      margin-bottom: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 6px;
     }
 
-    .subtitle {
-      font-size: 14px;
+    h1 span { color: var(--muted); font-weight: 400; }
+
+    .sub {
+      font-size: 13px;
       color: var(--muted);
       line-height: 1.6;
     }
 
-    .card {
-      background: var(--surface);
+    /* Steps hint */
+    .steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      background: var(--s1);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-bottom: 12px;
+      border-radius: var(--r);
+      overflow: hidden;
     }
 
-    .label {
+    .step {
+      flex: 1;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted2);
+      border-right: 1px solid var(--border);
+      line-height: 1.4;
+    }
+
+    .step:last-child { border-right: none; }
+    .step .num {
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    /* Groq key card */
+    .groq-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+    }
+
+    .groq-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .groq-label {
+      font-family: 'Syne', sans-serif;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
-      display: block;
+    }
+
+    .groq-link {
+      font-size: 11px;
+      color: var(--green);
+      text-decoration: none;
+      border: 1px solid var(--green-border);
+      border-radius: 100px;
+      padding: 3px 10px;
+      transition: background 0.15s;
+    }
+    .groq-link:hover { background: var(--green-dim); }
+
+    input[type="password"],
+    input[type="text"],
+    select {
+      width: 100%;
+      background: var(--s2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Instrument Sans', sans-serif;
+      color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(74,222,128,0.08);
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2352525b' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted2);
+      margin-top: 7px;
+      line-height: 1.5;
     }
 
     /* Drop zone */
     #dropzone {
       border: 1.5px dashed var(--border2);
-      border-radius: var(--radius);
+      border-radius: var(--r);
       padding: 2.5rem 1rem;
       text-align: center;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      background: transparent;
-      margin-bottom: 12px;
-    }
-
-    #dropzone:hover, #dropzone.drag-over {
-      border-color: var(--accent);
-      background: rgba(167,139,250,0.04);
-    }
-
-    .drop-icon {
-      font-size: 36px;
+      transition: all 0.2s;
       margin-bottom: 10px;
+      position: relative;
+    }
+
+    #dropzone:hover, #dropzone.over {
+      border-color: var(--green);
+      background: rgba(74,222,128,0.03);
+    }
+
+    .wave {
+      font-size: 38px;
       display: block;
+      margin-bottom: 10px;
+      animation: float 3s ease-in-out infinite;
     }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 
-    .drop-title {
+    .dz-title {
+      font-family: 'Syne', sans-serif;
       font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 4px;
+      font-weight: 600;
+      margin-bottom: 5px;
     }
 
-    .drop-hint {
+    .dz-hint {
       font-size: 12px;
       color: var(--muted);
     }
@@ -143,147 +230,120 @@
     /* File info */
     #fileInfo {
       display: none;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 16px;
       align-items: center;
       gap: 12px;
-      margin-bottom: 12px;
+      background: var(--s2);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 12px 16px;
+      margin-bottom: 10px;
     }
 
-    .file-icon { font-size: 22px; }
+    .fi-icon { font-size: 24px; }
+    .fi-body { flex:1; min-width:0; }
+    .fi-name { font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .fi-size { font-size:12px; color:var(--muted); margin-top:2px; }
 
-    .file-details { flex: 1; min-width: 0; }
-
-    .file-name {
-      font-size: 14px;
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .x-btn {
+      background:none; border:none; cursor:pointer;
+      color:var(--muted2); font-size:18px; line-height:1;
+      transition:color 0.15s; padding:4px;
     }
+    .x-btn:hover { color: var(--red); }
 
-    .file-size { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    .clear-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1;
-      transition: color 0.15s;
-      padding: 4px;
+    /* Settings row */
+    .opts {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    .clear-btn:hover { color: var(--danger); }
+    .opts > div { flex:1; }
 
-    /* Inputs */
-    input[type="password"],
-    input[type="text"],
-    select {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 14px;
-      color: var(--text);
-      font-family: inherit;
-      transition: border-color 0.15s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    input[type="password"]:focus,
-    input[type="text"]:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    select {
-      cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371717a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 36px;
-    }
-
-    .hint {
+    .opt-label {
       font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
-      line-height: 1.5;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      display: block;
+      margin-bottom: 6px;
     }
-
-    .hint a { color: var(--accent); text-decoration: none; }
-    .hint a:hover { text-decoration: underline; }
-
-    .row { display: flex; gap: 10px; }
-    .row > * { flex: 1; }
 
     /* Generate button */
-    #generateBtn {
+    #genBtn {
       width: 100%;
       padding: 14px;
+      font-family: 'Syne', sans-serif;
       font-size: 15px;
-      font-weight: 500;
-      font-family: inherit;
-      background: linear-gradient(135deg, var(--accent2), var(--accent));
-      color: white;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      background: var(--green);
+      color: #000;
       border: none;
-      border-radius: var(--radius);
+      border-radius: var(--r);
       cursor: pointer;
       transition: opacity 0.2s, transform 0.1s;
       margin-top: 4px;
-      letter-spacing: -0.01em;
     }
 
-    #generateBtn:hover:not(:disabled) { opacity: 0.9; }
-    #generateBtn:active:not(:disabled) { transform: scale(0.99); }
-    #generateBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #genBtn:hover:not(:disabled) { opacity: 0.88; }
+    #genBtn:active:not(:disabled) { transform: scale(0.99); }
+    #genBtn:disabled { opacity: 0.3; cursor: not-allowed; }
 
     /* Progress */
-    #progress { display: none; margin-top: 16px; }
+    #progress { display:none; margin-top:14px; }
 
-    .progress-bar-track {
-      background: var(--surface2);
+    .prog-track {
+      background: var(--s3);
       border-radius: 100px;
-      height: 4px;
+      height: 3px;
       overflow: hidden;
+      margin-bottom: 8px;
     }
 
-    #progressBar {
+    #progBar {
       height: 100%;
-      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      background: var(--green);
       width: 0%;
       border-radius: 100px;
       transition: width 0.5s ease;
     }
 
-    #progressText {
+    #progText {
       font-size: 12px;
       color: var(--muted);
       text-align: center;
-      margin-top: 8px;
     }
 
     /* Result */
-    #result { display: none; margin-top: 12px; }
+    #result { display:none; margin-top:14px; }
 
-    .preview-box {
-      background: var(--surface);
+    .ok-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid var(--green-border);
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-bottom: 12px;
+    }
+
+    .preview {
+      background: var(--s1);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--r);
       padding: 14px 16px;
-      margin-bottom: 10px;
       max-height: 220px;
       overflow-y: auto;
+      margin-bottom: 10px;
     }
 
     pre {
-      font-family: 'DM Mono', monospace;
+      font-family: 'Courier New', monospace;
       font-size: 12px;
       line-height: 1.7;
       color: #a1a1aa;
@@ -291,29 +351,27 @@
       word-break: break-word;
     }
 
-    .actions { display: flex; gap: 8px; }
+    .act-row { display:flex; gap:8px; }
 
     .btn-dl {
       flex: 1;
       padding: 11px;
-      font-size: 14px;
-      font-weight: 500;
-      font-family: inherit;
-      background: var(--surface2);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--s2);
       color: var(--text);
       border: 1px solid var(--border2);
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: border-color 0.15s, background 0.15s;
     }
+    .btn-dl:hover { border-color: var(--green); }
 
-    .btn-dl:hover { background: var(--surface); border-color: var(--accent); }
-
-    .btn-copy {
-      padding: 11px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      font-family: inherit;
+    .btn-cp {
+      padding: 11px 18px;
+      font-size: 13px;
+      font-family: 'Instrument Sans', sans-serif;
       background: transparent;
       color: var(--muted);
       border: 1px solid var(--border);
@@ -322,254 +380,243 @@
       transition: color 0.15s, border-color 0.15s;
       white-space: nowrap;
     }
-
-    .btn-copy:hover { color: var(--text); border-color: var(--border2); }
+    .btn-cp:hover { color:var(--text); border-color:var(--border2); }
 
     /* Error */
-    #errorBox {
+    #errBox {
       display: none;
       margin-top: 12px;
       padding: 12px 16px;
-      background: rgba(248,113,113,0.08);
-      border: 1px solid rgba(248,113,113,0.2);
+      background: var(--red-dim);
+      border: 1px solid var(--red-border);
       border-radius: 8px;
       font-size: 13px;
-      color: var(--danger);
-      line-height: 1.5;
-    }
-
-    /* Success chip */
-    .success-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--success);
-      background: rgba(74,222,128,0.08);
-      border: 1px solid rgba(74,222,128,0.2);
-      border-radius: 100px;
-      padding: 4px 12px;
-      margin-bottom: 10px;
+      color: var(--red);
+      line-height: 1.6;
     }
 
     footer {
-      margin-top: 2rem;
-      text-align: center;
+      margin-top: 2.5rem;
       font-size: 11px;
-      color: #3f3f46;
+      color: var(--muted2);
+      text-align: center;
     }
+
+    footer a { color: var(--muted); text-decoration:none; }
+    footer a:hover { color: var(--green); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 100px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="badge">AI Powered</div>
-      <h1>MP3 → SRT Generator</h1>
-      <p class="subtitle">Audio file එකෙන් English subtitles automatically generate කරන්න — Whisper AI use කරලා.</p>
-    </div>
+<div class="wrap">
 
-    <!-- Drop zone -->
-    <div id="dropzone" onclick="document.getElementById('fileInput').click()">
-      <span class="drop-icon">🎵</span>
-      <p class="drop-title">MP3 file එක drop කරන්න</p>
-      <p class="drop-hint">MP3, WAV, M4A, WEBM · max 25MB · Click හෝ drag & drop</p>
-      <input type="file" id="fileInput" accept=".mp3,.m4a,.wav,.webm,.mp4" style="display:none">
-    </div>
-
-    <!-- File info -->
-    <div id="fileInfo">
-      <span class="file-icon">🎧</span>
-      <div class="file-details">
-        <div class="file-name" id="fileName"></div>
-        <div class="file-size" id="fileSize"></div>
-      </div>
-      <button class="clear-btn" onclick="clearFile()">✕</button>
-    </div>
-
-    <!-- API Key -->
-    <div class="card">
-      <span class="label">OpenAI API Key</span>
-      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off" />
-      <p class="hint">Key එක browser එකේ only use වෙනවා, save නොවෙයි. <a href="https://platform.openai.com/api-keys" target="_blank">Key get කරන්න →</a></p>
-    </div>
-
-    <!-- Options -->
-    <div class="card">
-      <span class="label">Settings</span>
-      <div class="row">
-        <div>
-          <select id="sourceLang">
-            <option value="">Auto detect</option>
-            <option value="si">සිංහල</option>
-            <option value="en">English</option>
-            <option value="ta">Tamil</option>
-            <option value="hi">Hindi</option>
-            <option value="ja">Japanese</option>
-            <option value="zh">Chinese</option>
-            <option value="ko">Korean</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="es">Spanish</option>
-          </select>
-          <p class="hint">Source language</p>
-        </div>
-        <div>
-          <select id="subtitleMode">
-            <option value="translate">English (translate)</option>
-            <option value="transcribe">Same as source</option>
-          </select>
-          <p class="hint">Subtitle language</p>
-        </div>
-      </div>
-    </div>
-
-    <button id="generateBtn" onclick="generateSRT()" disabled>
-      ✨ SRT Generate කරන්න
-    </button>
-
-    <!-- Progress -->
-    <div id="progress">
-      <div class="progress-bar-track">
-        <div id="progressBar"></div>
-      </div>
-      <p id="progressText"></p>
-    </div>
-
-    <!-- Result -->
-    <div id="result">
-      <div class="success-chip">✓ Successfully generated</div>
-      <div class="preview-box">
-        <pre id="srtPreview"></pre>
-      </div>
-      <div class="actions">
-        <button class="btn-dl" onclick="downloadSRT()">⬇ SRT Download කරන්න</button>
-        <button class="btn-copy" id="copyBtn" onclick="copySRT()">Copy</button>
-      </div>
-    </div>
-
-    <!-- Error -->
-    <div id="errorBox" id="errorText"></div>
-
-    <footer>Powered by OpenAI Whisper · No data stored</footer>
+  <div class="header">
+    <div class="free-badge"><div class="dot"></div> 100% Free · No Credit Card</div>
+    <h1>MP3 → SRT <span>Generator</span></h1>
+    <p class="sub">Groq Whisper use කරලා audio file එකෙන් English subtitles generate කරන්න — free, fast, no account required.</p>
   </div>
 
-  <script>
-    let selectedFile = null;
-    let srtContent = '';
-    let srtFileName = 'subtitles.srt';
+  <div class="steps">
+    <div class="step"><span class="num">1</span>Groq key</div>
+    <div class="step"><span class="num">2</span>MP3 upload</div>
+    <div class="step"><span class="num">3</span>Generate</div>
+    <div class="step"><span class="num">4</span>Download</div>
+  </div>
 
-    const fileInput = document.getElementById('fileInput');
-    const dropzone = document.getElementById('dropzone');
+  <!-- Groq Key -->
+  <div class="groq-card">
+    <div class="groq-header">
+      <span class="groq-label">Groq API Key (Free)</span>
+      <a class="groq-link" href="https://console.groq.com/keys" target="_blank">Free key get කරන්න →</a>
+    </div>
+    <input type="password" id="apiKey" placeholder="gsk_..." autocomplete="off" />
+    <p class="hint">console.groq.com → API Keys → Create key. Browser only — save නොවෙයි.</p>
+  </div>
 
-    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  <!-- Drop zone -->
+  <div id="dropzone" onclick="document.getElementById('fi').click()">
+    <span class="wave">🎵</span>
+    <p class="dz-title">Audio file drop කරන්න</p>
+    <p class="dz-hint">MP3 · WAV · M4A · WEBM · max 25MB</p>
+    <input type="file" id="fi" accept=".mp3,.m4a,.wav,.webm,.mp4,.ogg" style="display:none">
+  </div>
 
-    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropzone.classList.remove('drag-over');
-      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  <!-- File info -->
+  <div id="fileInfo">
+    <span class="fi-icon">🎧</span>
+    <div class="fi-body">
+      <div class="fi-name" id="fname"></div>
+      <div class="fi-size" id="fsize"></div>
+    </div>
+    <button class="x-btn" onclick="clearFile()">✕</button>
+  </div>
+
+  <!-- Options -->
+  <div class="opts">
+    <div>
+      <span class="opt-label">Source language</span>
+      <select id="srcLang">
+        <option value="">Auto detect</option>
+        <option value="si">සිංහල</option>
+        <option value="en">English</option>
+        <option value="ta">Tamil</option>
+        <option value="hi">Hindi</option>
+        <option value="ja">Japanese</option>
+        <option value="zh">Chinese</option>
+        <option value="ko">Korean</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+      </select>
+    </div>
+    <div>
+      <span class="opt-label">Output</span>
+      <select id="mode">
+        <option value="translate">English (translate)</option>
+        <option value="transcribe">Same language</option>
+      </select>
+    </div>
+  </div>
+
+  <button id="genBtn" onclick="generate()" disabled>Generate SRT ↓</button>
+
+  <div id="progress">
+    <div class="prog-track"><div id="progBar"></div></div>
+    <p id="progText"></p>
+  </div>
+
+  <div id="result">
+    <div class="ok-chip">✓ Successfully generated</div>
+    <div class="preview"><pre id="srtPreview"></pre></div>
+    <div class="act-row">
+      <button class="btn-dl" onclick="dlSRT()">⬇ SRT Download කරන්න</button>
+      <button class="btn-cp" id="cpBtn" onclick="cpSRT()">Copy</button>
+    </div>
+  </div>
+
+  <div id="errBox"></div>
+
+  <footer>
+    Powered by <a href="https://groq.com" target="_blank">Groq</a> · Whisper large-v3-turbo ·
+    <a href="https://console.groq.com/keys" target="_blank">Get free API key</a>
+  </footer>
+</div>
+
+<script>
+let file = null, srt = '', srtName = 'subtitles.srt';
+
+const fi = document.getElementById('fi');
+const dz = document.getElementById('dropzone');
+
+fi.addEventListener('change', e => { if (e.target.files[0]) pick(e.target.files[0]); });
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  if (e.dataTransfer.files[0]) pick(e.dataTransfer.files[0]);
+});
+
+function pick(f) {
+  file = f;
+  srtName = f.name.replace(/\.[^.]+$/, '') + '.srt';
+  document.getElementById('fileInfo').style.display = 'flex';
+  document.getElementById('fname').textContent = f.name;
+  document.getElementById('fsize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
+  document.getElementById('genBtn').disabled = false;
+  hide('result'); hide('errBox'); hide('progress');
+}
+
+function clearFile() {
+  file = null; fi.value = '';
+  document.getElementById('fileInfo').style.display = 'none';
+  document.getElementById('genBtn').disabled = true;
+  hide('result'); hide('progress');
+}
+
+function prog(pct, txt) {
+  show('progress');
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progText').textContent = txt;
+}
+
+function err(msg) {
+  const b = document.getElementById('errBox');
+  b.style.display = 'block';
+  b.textContent = '⚠ ' + msg;
+}
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+async function generate() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { err('Groq API Key enter කරන්න. console.groq.com → API Keys → Free!'); return; }
+  if (!file) { err('Audio file select කරන්න.'); return; }
+  if (file.size > 26214400) { err('File size 25MB limit exceed කරනවා.'); return; }
+
+  hide('errBox'); hide('result');
+  document.getElementById('genBtn').disabled = true;
+
+  const mode = document.getElementById('mode').value;
+  const lang = document.getElementById('srcLang').value;
+
+  // Groq uses OpenAI-compatible endpoint
+  const endpoint = mode === 'translate'
+    ? 'https://api.groq.com/openai/v1/audio/translations'
+    : 'https://api.groq.com/openai/v1/audio/transcriptions';
+
+  prog(20, 'Uploading file...');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('model', 'whisper-large-v3-turbo');
+  fd.append('response_format', 'srt');
+  if (lang && mode !== 'translate') fd.append('language', lang);
+
+  try {
+    prog(50, 'Groq AI processing... (ටිකක් ඉන්න)');
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key },
+      body: fd
     });
 
-    function handleFile(file) {
-      selectedFile = file;
-      srtFileName = file.name.replace(/\.[^.]+$/, '') + '.srt';
-      document.getElementById('fileInfo').style.display = 'flex';
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-      document.getElementById('generateBtn').disabled = false;
-      document.getElementById('result').style.display = 'none';
-      document.getElementById('errorBox').style.display = 'none';
-      document.getElementById('progress').style.display = 'none';
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error?.message || 'API error ' + res.status);
     }
 
-    function clearFile() {
-      selectedFile = null;
-      document.getElementById('fileInfo').style.display = 'none';
-      document.getElementById('fileInput').value = '';
-      document.getElementById('generateBtn').disabled = true;
-      document.getElementById('result').style.display = 'none';
-      document.getElementById('progress').style.display = 'none';
-    }
+    prog(92, 'Generating SRT file...');
+    srt = await res.text();
+    prog(100, 'Done!');
 
-    function setProgress(pct, text) {
-      document.getElementById('progress').style.display = 'block';
-      document.getElementById('progressBar').style.width = pct + '%';
-      document.getElementById('progressText').textContent = text;
-    }
+    document.getElementById('srtPreview').textContent =
+      srt.length > 2000 ? srt.substring(0, 2000) + '\n...' : srt;
+    show('result');
+  } catch(e) {
+    err(e.message);
+    hide('progress');
+  }
 
-    function showError(msg) {
-      const box = document.getElementById('errorBox');
-      box.style.display = 'block';
-      box.textContent = '⚠ ' + msg;
-    }
+  document.getElementById('genBtn').disabled = false;
+}
 
-    async function generateSRT() {
-      const apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey) { showError('OpenAI API Key එකක් enter කරන්න.'); return; }
-      if (!selectedFile) { showError('File එකක් select කරන්න.'); return; }
-      if (selectedFile.size > 26214400) { showError('File size 25MB limit exceed කරනවා.'); return; }
+function dlSRT() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([srt], {type:'text/plain;charset=utf-8'}));
+  a.download = srtName; a.click();
+}
 
-      document.getElementById('errorBox').style.display = 'none';
-      document.getElementById('result').style.display = 'none';
-      document.getElementById('generateBtn').disabled = true;
-
-      const mode = document.getElementById('subtitleMode').value;
-      const lang = document.getElementById('sourceLang').value;
-      const endpoint = mode === 'translate'
-        ? 'https://api.openai.com/v1/audio/translations'
-        : 'https://api.openai.com/v1/audio/transcriptions';
-
-      setProgress(15, 'Uploading...');
-
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('model', 'whisper-1');
-      formData.append('response_format', 'srt');
-      if (lang && mode !== 'translate') formData.append('language', lang);
-
-      try {
-        setProgress(40, 'Processing audio... (ටිකක් ඉන්න)');
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + apiKey },
-          body: formData
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error?.message || 'API error ' + res.status);
-        }
-
-        setProgress(90, 'Generating SRT...');
-        srtContent = await res.text();
-        setProgress(100, 'Done!');
-
-        document.getElementById('srtPreview').textContent =
-          srtContent.length > 1800 ? srtContent.substring(0, 1800) + '\n...' : srtContent;
-        document.getElementById('result').style.display = 'block';
-      } catch (err) {
-        showError(err.message);
-        document.getElementById('progress').style.display = 'none';
-      }
-
-      document.getElementById('generateBtn').disabled = false;
-    }
-
-    function downloadSRT() {
-      const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = srtFileName;
-      a.click();
-    }
-
-    function copySRT() {
-      navigator.clipboard.writeText(srtContent).then(() => {
-        document.getElementById('copyBtn').textContent = 'Copied!';
-        setTimeout(() => document.getElementById('copyBtn').textContent = 'Copy', 2000);
-      });
-    }
-  </script>
+function cpSRT() {
+  navigator.clipboard.writeText(srt).then(() => {
+    document.getElementById('cpBtn').textContent = 'Copied!';
+    setTimeout(() => document.getElementById('cpBtn').textContent = 'Copy', 2000);
+  });
+}
+</script>
 </body>
 </html>
